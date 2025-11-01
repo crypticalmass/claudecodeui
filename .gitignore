@@ -109,6 +109,10 @@ temp/
 CLAUDE.md
 .mcp.json
 
+# Conversation history (local backups)
+claude-conversation-history.jsonl
+claude-conversations/
+
 
 # Database files
 *.db
@@ -129,4 +133,4 @@ dev-debug.log
 
 # Task files
 tasks.json
-tasks/ 
+tasks/

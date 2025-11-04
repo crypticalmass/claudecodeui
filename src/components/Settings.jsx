@@ -9,6 +9,7 @@ import StandaloneShell from './StandaloneShell';
 import ClaudeLogo from './ClaudeLogo';
 import CursorLogo from './CursorLogo';
 import CredentialsSettings from './CredentialsSettings';
+import { api } from '../utils/api';
 
 function Settings({ isOpen, onClose, projects = [], initialTab = 'tools' }) {
   const { isDarkMode, toggleDarkMode } = useTheme();

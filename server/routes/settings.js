@@ -1,178 +1,85 @@
 import express from 'express';
-import { apiKeysDb, credentialsDb } from '../database/db.js';
+import { settingsDb } from '../database/db.js';
 
 const router = express.Router();
 
-// ===============================
-// API Keys Management
-// ===============================
-
-// Get all API keys for the authenticated user
-router.get('/api-keys', async (req, res) => {
+// Get all settings for the current user
+router.get('/', async (req, res) => {
   try {
-    const apiKeys = apiKeysDb.getApiKeys(req.user.id);
-    // Don't send the full API key in the list for security
-    const sanitizedKeys = apiKeys.map(key => ({
-      ...key,
-      api_key: key.api_key.substring(0, 10) + '...'
-    }));
-    res.json({ apiKeys: sanitizedKeys });
+    const userId = req.user.id;
+    const settings = settingsDb.getAllSettings(userId);
+    res.json(settings);
   } catch (error) {
-    console.error('Error fetching API keys:', error);
-    res.status(500).json({ error: 'Failed to fetch API keys' });
+    console.error('Error getting settings:', error);
+    res.status(500).json({ error: error.message });
   }
 });
 
-// Create a new API key
-router.post('/api-keys', async (req, res) => {
+// Get a specific setting
+router.get('/:key', async (req, res) => {
   try {
-    const { keyName } = req.body;
-
-    if (!keyName || !keyName.trim()) {
-      return res.status(400).json({ error: 'Key name is required' });
-    }
-
-    const result = apiKeysDb.createApiKey(req.user.id, keyName.trim());
-    res.json({
-      success: true,
-      apiKey: result
-    });
+    const userId = req.user.id;
+    const { key } = req.params;
+    const value = settingsDb.getSetting(userId, key);
+    res.json({ key, value });
   } catch (error) {
-    console.error('Error creating API key:', error);
-    res.status(500).json({ error: 'Failed to create API key' });
+    console.error('Error getting setting:', error);
+    res.status(500).json({ error: error.message });
   }
 });
 
-// Delete an API key
-router.delete('/api-keys/:keyId', async (req, res) => {
+// Save a setting
+router.post('/:key', async (req, res) => {
   try {
-    const { keyId } = req.params;
-    const success = apiKeysDb.deleteApiKey(req.user.id, parseInt(keyId));
-
-    if (success) {
-      res.json({ success: true });
-    } else {
-      res.status(404).json({ error: 'API key not found' });
+    const userId = req.user.id;
+    const { key } = req.params;
+    const { value } = req.body;
+    
+    if (value === undefined) {
+      return res.status(400).json({ error: 'Value is required' });
     }
+    
+    settingsDb.saveSetting(userId, key, value);
+    res.json({ success: true, key, value });
   } catch (error) {
-    console.error('Error deleting API key:', error);
-    res.status(500).json({ error: 'Failed to delete API key' });
+    console.error('Error saving setting:', error);
+    res.status(500).json({ error: error.message });
   }
 });
 
-// Toggle API key active status
-router.patch('/api-keys/:keyId/toggle', async (req, res) => {
+// Save multiple settings at once
+router.post('/', async (req, res) => {
   try {
-    const { keyId } = req.params;
-    const { isActive } = req.body;
-
-    if (typeof isActive !== 'boolean') {
-      return res.status(400).json({ error: 'isActive must be a boolean' });
+    const userId = req.user.id;
+    const settings = req.body;
+    
+    if (!settings || typeof settings !== 'object') {
+      return res.status(400).json({ error: 'Settings object is required' });
     }
-
-    const success = apiKeysDb.toggleApiKey(req.user.id, parseInt(keyId), isActive);
-
-    if (success) {
-      res.json({ success: true });
-    } else {
-      res.status(404).json({ error: 'API key not found' });
+    
+    for (const [key, value] of Object.entries(settings)) {
+      settingsDb.saveSetting(userId, key, value);
     }
+    
+    res.json({ success: true, saved: Object.keys(settings).length });
   } catch (error) {
-    console.error('Error toggling API key:', error);
-    res.status(500).json({ error: 'Failed to toggle API key' });
+    console.error('Error saving settings:', error);
+    res.status(500).json({ error: error.message });
   }
 });
 
-// ===============================
-// Generic Credentials Management
-// ===============================
-
-// Get all credentials for the authenticated user (optionally filtered by type)
-router.get('/credentials', async (req, res) => {
+// Delete a setting
+router.delete('/:key', async (req, res) => {
   try {
-    const { type } = req.query;
-    const credentials = credentialsDb.getCredentials(req.user.id, type || null);
-    // Don't send the actual credential values for security
-    res.json({ credentials });
+    const userId = req.user.id;
+    const { key } = req.params;
+    const deleted = settingsDb.deleteSetting(userId, key);
+    res.json({ success: deleted });
   } catch (error) {
-    console.error('Error fetching credentials:', error);
-    res.status(500).json({ error: 'Failed to fetch credentials' });
-  }
-});
-
-// Create a new credential
-router.post('/credentials', async (req, res) => {
-  try {
-    const { credentialName, credentialType, credentialValue, description } = req.body;
-
-    if (!credentialName || !credentialName.trim()) {
-      return res.status(400).json({ error: 'Credential name is required' });
-    }
-
-    if (!credentialType || !credentialType.trim()) {
-      return res.status(400).json({ error: 'Credential type is required' });
-    }
-
-    if (!credentialValue || !credentialValue.trim()) {
-      return res.status(400).json({ error: 'Credential value is required' });
-    }
-
-    const result = credentialsDb.createCredential(
-      req.user.id,
-      credentialName.trim(),
-      credentialType.trim(),
-      credentialValue.trim(),
-      description?.trim() || null
-    );
-
-    res.json({
-      success: true,
-      credential: result
-    });
-  } catch (error) {
-    console.error('Error creating credential:', error);
-    res.status(500).json({ error: 'Failed to create credential' });
-  }
-});
-
-// Delete a credential
-router.delete('/credentials/:credentialId', async (req, res) => {
-  try {
-    const { credentialId } = req.params;
-    const success = credentialsDb.deleteCredential(req.user.id, parseInt(credentialId));
-
-    if (success) {
-      res.json({ success: true });
-    } else {
-      res.status(404).json({ error: 'Credential not found' });
-    }
-  } catch (error) {
-    console.error('Error deleting credential:', error);
-    res.status(500).json({ error: 'Failed to delete credential' });
-  }
-});
-
-// Toggle credential active status
-router.patch('/credentials/:credentialId/toggle', async (req, res) => {
-  try {
-    const { credentialId } = req.params;
-    const { isActive } = req.body;
-
-    if (typeof isActive !== 'boolean') {
-      return res.status(400).json({ error: 'isActive must be a boolean' });
-    }
-
-    const success = credentialsDb.toggleCredential(req.user.id, parseInt(credentialId), isActive);
-
-    if (success) {
-      res.json({ success: true });
-    } else {
-      res.status(404).json({ error: 'Credential not found' });
-    }
-  } catch (error) {
-    console.error('Error toggling credential:', error);
-    res.status(500).json({ error: 'Failed to toggle credential' });
+    console.error('Error deleting setting:', error);
+    res.status(500).json({ error: error.message });
   }
 });
 
 export default router;
+

@@ -141,6 +141,26 @@ export const api = {
     return authenticatedFetch(`/api/browse-filesystem?${params}`);
   },
 
+  // Settings endpoints
+  settings: {
+    getAll: () => authenticatedFetch('/api/settings'),
+    get: (key) => authenticatedFetch(`/api/settings/${key}`),
+    save: (key, value) =>
+      authenticatedFetch(`/api/settings/${key}`, {
+        method: 'POST',
+        body: JSON.stringify({ value }),
+      }),
+    saveAll: (settings) =>
+      authenticatedFetch('/api/settings', {
+        method: 'POST',
+        body: JSON.stringify(settings),
+      }),
+    delete: (key) =>
+      authenticatedFetch(`/api/settings/${key}`, {
+        method: 'DELETE',
+      }),
+  },
+
   // Generic GET method for any endpoint
   get: (endpoint) => authenticatedFetch(`/api${endpoint}`),
 };

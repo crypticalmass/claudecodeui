@@ -56,22 +56,12 @@ function Settings({ isOpen, onClose, projects = [], initialTab = 'tools' }) {
   const [jsonValidationError, setJsonValidationError] = useState('');
   const [toolsProvider, setToolsProvider] = useState('claude'); // 'claude' or 'cursor'
 
-  // Code Editor settings
-  const [codeEditorTheme, setCodeEditorTheme] = useState(() =>
-    localStorage.getItem('codeEditorTheme') || 'dark'
-  );
-  const [codeEditorWordWrap, setCodeEditorWordWrap] = useState(() =>
-    localStorage.getItem('codeEditorWordWrap') === 'true'
-  );
-  const [codeEditorShowMinimap, setCodeEditorShowMinimap] = useState(() =>
-    localStorage.getItem('codeEditorShowMinimap') !== 'false' // Default true
-  );
-  const [codeEditorLineNumbers, setCodeEditorLineNumbers] = useState(() =>
-    localStorage.getItem('codeEditorLineNumbers') !== 'false' // Default true
-  );
-  const [codeEditorFontSize, setCodeEditorFontSize] = useState(() =>
-    localStorage.getItem('codeEditorFontSize') || '14'
-  );
+  // Code Editor settings - will be loaded from database
+  const [codeEditorTheme, setCodeEditorTheme] = useState('dark');
+  const [codeEditorWordWrap, setCodeEditorWordWrap] = useState(false);
+  const [codeEditorShowMinimap, setCodeEditorShowMinimap] = useState(true);
+  const [codeEditorLineNumbers, setCodeEditorLineNumbers] = useState(true);
+  const [codeEditorFontSize, setCodeEditorFontSize] = useState('14');
   
   // Cursor-specific states
   const [cursorAllowedCommands, setCursorAllowedCommands] = useState([]);
@@ -349,65 +339,223 @@ function Settings({ isOpen, onClose, projects = [], initialTab = 'tools' }) {
     }
   }, [isOpen, initialTab]);
 
-  // Persist code editor settings to localStorage
+  // Persist code editor settings to database
   useEffect(() => {
-    localStorage.setItem('codeEditorTheme', codeEditorTheme);
-    window.dispatchEvent(new Event('codeEditorSettingsChanged'));
-  }, [codeEditorTheme]);
+    const saveEditorSetting = async () => {
+      try {
+        await api.settings.save('codeEditorTheme', codeEditorTheme);
+        localStorage.setItem('codeEditorTheme', codeEditorTheme); // Keep as backup
+        window.dispatchEvent(new Event('codeEditorSettingsChanged'));
+      } catch (error) {
+        console.error('Failed to save codeEditorTheme to database:', error);
+        localStorage.setItem('codeEditorTheme', codeEditorTheme);
+        window.dispatchEvent(new Event('codeEditorSettingsChanged'));
+      }
+    };
+    if (isOpen) saveEditorSetting();
+  }, [codeEditorTheme, isOpen]);
 
   useEffect(() => {
-    localStorage.setItem('codeEditorWordWrap', codeEditorWordWrap.toString());
-    window.dispatchEvent(new Event('codeEditorSettingsChanged'));
-  }, [codeEditorWordWrap]);
+    const saveEditorSetting = async () => {
+      try {
+        await api.settings.save('codeEditorWordWrap', codeEditorWordWrap);
+        localStorage.setItem('codeEditorWordWrap', codeEditorWordWrap.toString());
+        window.dispatchEvent(new Event('codeEditorSettingsChanged'));
+      } catch (error) {
+        console.error('Failed to save codeEditorWordWrap to database:', error);
+        localStorage.setItem('codeEditorWordWrap', codeEditorWordWrap.toString());
+        window.dispatchEvent(new Event('codeEditorSettingsChanged'));
+      }
+    };
+    if (isOpen) saveEditorSetting();
+  }, [codeEditorWordWrap, isOpen]);
 
   useEffect(() => {
-    localStorage.setItem('codeEditorShowMinimap', codeEditorShowMinimap.toString());
-    window.dispatchEvent(new Event('codeEditorSettingsChanged'));
-  }, [codeEditorShowMinimap]);
+    const saveEditorSetting = async () => {
+      try {
+        await api.settings.save('codeEditorShowMinimap', codeEditorShowMinimap);
+        localStorage.setItem('codeEditorShowMinimap', codeEditorShowMinimap.toString());
+        window.dispatchEvent(new Event('codeEditorSettingsChanged'));
+      } catch (error) {
+        console.error('Failed to save codeEditorShowMinimap to database:', error);
+        localStorage.setItem('codeEditorShowMinimap', codeEditorShowMinimap.toString());
+        window.dispatchEvent(new Event('codeEditorSettingsChanged'));
+      }
+    };
+    if (isOpen) saveEditorSetting();
+  }, [codeEditorShowMinimap, isOpen]);
 
   useEffect(() => {
-    localStorage.setItem('codeEditorLineNumbers', codeEditorLineNumbers.toString());
-    window.dispatchEvent(new Event('codeEditorSettingsChanged'));
-  }, [codeEditorLineNumbers]);
+    const saveEditorSetting = async () => {
+      try {
+        await api.settings.save('codeEditorLineNumbers', codeEditorLineNumbers);
+        localStorage.setItem('codeEditorLineNumbers', codeEditorLineNumbers.toString());
+        window.dispatchEvent(new Event('codeEditorSettingsChanged'));
+      } catch (error) {
+        console.error('Failed to save codeEditorLineNumbers to database:', error);
+        localStorage.setItem('codeEditorLineNumbers', codeEditorLineNumbers.toString());
+        window.dispatchEvent(new Event('codeEditorSettingsChanged'));
+      }
+    };
+    if (isOpen) saveEditorSetting();
+  }, [codeEditorLineNumbers, isOpen]);
 
   useEffect(() => {
-    localStorage.setItem('codeEditorFontSize', codeEditorFontSize);
-    window.dispatchEvent(new Event('codeEditorSettingsChanged'));
-  }, [codeEditorFontSize]);
+    const saveEditorSetting = async () => {
+      try {
+        await api.settings.save('codeEditorFontSize', codeEditorFontSize);
+        localStorage.setItem('codeEditorFontSize', codeEditorFontSize);
+        window.dispatchEvent(new Event('codeEditorSettingsChanged'));
+      } catch (error) {
+        console.error('Failed to save codeEditorFontSize to database:', error);
+        localStorage.setItem('codeEditorFontSize', codeEditorFontSize);
+        window.dispatchEvent(new Event('codeEditorSettingsChanged'));
+      }
+    };
+    if (isOpen) saveEditorSetting();
+  }, [codeEditorFontSize, isOpen]);
 
   const loadSettings = async () => {
     try {
-      
-      // Load Claude settings from localStorage
-      const savedSettings = localStorage.getItem('claude-settings');
-      
-      if (savedSettings) {
-        const settings = JSON.parse(savedSettings);
-        setAllowedTools(settings.allowedTools || []);
-        setDisallowedTools(settings.disallowedTools || []);
-        setSkipPermissions(settings.skipPermissions || false);
-        setProjectSortOrder(settings.projectSortOrder || 'name');
-      } else {
-        // Set defaults
-        setAllowedTools([]);
-        setDisallowedTools([]);
-        setSkipPermissions(false);
-        setProjectSortOrder('name');
-      }
-      
-      // Load Cursor settings from localStorage
-      const savedCursorSettings = localStorage.getItem('cursor-tools-settings');
-      
-      if (savedCursorSettings) {
-        const cursorSettings = JSON.parse(savedCursorSettings);
-        setCursorAllowedCommands(cursorSettings.allowedCommands || []);
-        setCursorDisallowedCommands(cursorSettings.disallowedCommands || []);
-        setCursorSkipPermissions(cursorSettings.skipPermissions || false);
-      } else {
-        // Set Cursor defaults
-        setCursorAllowedCommands([]);
-        setCursorDisallowedCommands([]);
-        setCursorSkipPermissions(false);
+      // Try loading from database first
+      try {
+        const response = await api.settings.getAll();
+        if (response.ok) {
+          const dbSettings = await response.json();
+          
+          // Load Claude settings from database
+          if (dbSettings['claude-settings']) {
+            const settings = dbSettings['claude-settings'];
+            setAllowedTools(settings.allowedTools || []);
+            setDisallowedTools(settings.disallowedTools || []);
+            setSkipPermissions(settings.skipPermissions || false);
+            setProjectSortOrder(settings.projectSortOrder || 'name');
+          } else {
+            // Fallback to localStorage for migration
+            const savedSettings = localStorage.getItem('claude-settings');
+            if (savedSettings) {
+              const settings = JSON.parse(savedSettings);
+              setAllowedTools(settings.allowedTools || []);
+              setDisallowedTools(settings.disallowedTools || []);
+              setSkipPermissions(settings.skipPermissions || false);
+              setProjectSortOrder(settings.projectSortOrder || 'name');
+              // Migrate to database
+              await api.settings.save('claude-settings', settings);
+            } else {
+              setAllowedTools([]);
+              setDisallowedTools([]);
+              setSkipPermissions(false);
+              setProjectSortOrder('name');
+            }
+          }
+          
+          // Load Cursor settings from database
+          if (dbSettings['cursor-tools-settings']) {
+            const cursorSettings = dbSettings['cursor-tools-settings'];
+            setCursorAllowedCommands(cursorSettings.allowedCommands || []);
+            setCursorDisallowedCommands(cursorSettings.disallowedCommands || []);
+            setCursorSkipPermissions(cursorSettings.skipPermissions || false);
+          } else {
+            // Fallback to localStorage for migration
+            const savedCursorSettings = localStorage.getItem('cursor-tools-settings');
+            if (savedCursorSettings) {
+              const cursorSettings = JSON.parse(savedCursorSettings);
+              setCursorAllowedCommands(cursorSettings.allowedCommands || []);
+              setCursorDisallowedCommands(cursorSettings.disallowedCommands || []);
+              setCursorSkipPermissions(cursorSettings.skipPermissions || false);
+              // Migrate to database
+              await api.settings.save('cursor-tools-settings', cursorSettings);
+            } else {
+              setCursorAllowedCommands([]);
+              setCursorDisallowedCommands([]);
+              setCursorSkipPermissions(false);
+            }
+          }
+          
+          // Load code editor settings from database
+          if (dbSettings['codeEditorTheme']) {
+            setCodeEditorTheme(dbSettings['codeEditorTheme']);
+          } else {
+            const saved = localStorage.getItem('codeEditorTheme');
+            if (saved) {
+              setCodeEditorTheme(saved);
+              await api.settings.save('codeEditorTheme', saved);
+            }
+          }
+          
+          if (dbSettings['codeEditorWordWrap'] !== undefined) {
+            setCodeEditorWordWrap(dbSettings['codeEditorWordWrap']);
+          } else {
+            const saved = localStorage.getItem('codeEditorWordWrap');
+            if (saved !== null) {
+              const value = saved === 'true';
+              setCodeEditorWordWrap(value);
+              await api.settings.save('codeEditorWordWrap', value);
+            }
+          }
+          
+          if (dbSettings['codeEditorShowMinimap'] !== undefined) {
+            setCodeEditorShowMinimap(dbSettings['codeEditorShowMinimap']);
+          } else {
+            const saved = localStorage.getItem('codeEditorShowMinimap');
+            if (saved !== null) {
+              const value = saved !== 'false';
+              setCodeEditorShowMinimap(value);
+              await api.settings.save('codeEditorShowMinimap', value);
+            }
+          }
+          
+          if (dbSettings['codeEditorLineNumbers'] !== undefined) {
+            setCodeEditorLineNumbers(dbSettings['codeEditorLineNumbers']);
+          } else {
+            const saved = localStorage.getItem('codeEditorLineNumbers');
+            if (saved !== null) {
+              const value = saved !== 'false';
+              setCodeEditorLineNumbers(value);
+              await api.settings.save('codeEditorLineNumbers', value);
+            }
+          }
+          
+          if (dbSettings['codeEditorFontSize']) {
+            setCodeEditorFontSize(dbSettings['codeEditorFontSize']);
+          } else {
+            const saved = localStorage.getItem('codeEditorFontSize');
+            if (saved) {
+              setCodeEditorFontSize(saved);
+              await api.settings.save('codeEditorFontSize', saved);
+            }
+          }
+        } else {
+          throw new Error('Failed to load settings from database');
+        }
+      } catch (dbError) {
+        // Fallback to localStorage if database fails
+        console.warn('Failed to load from database, using localStorage:', dbError);
+        const savedSettings = localStorage.getItem('claude-settings');
+        if (savedSettings) {
+          const settings = JSON.parse(savedSettings);
+          setAllowedTools(settings.allowedTools || []);
+          setDisallowedTools(settings.disallowedTools || []);
+          setSkipPermissions(settings.skipPermissions || false);
+          setProjectSortOrder(settings.projectSortOrder || 'name');
+        } else {
+          setAllowedTools([]);
+          setDisallowedTools([]);
+          setSkipPermissions(false);
+          setProjectSortOrder('name');
+        }
+        
+        const savedCursorSettings = localStorage.getItem('cursor-tools-settings');
+        if (savedCursorSettings) {
+          const cursorSettings = JSON.parse(savedCursorSettings);
+          setCursorAllowedCommands(cursorSettings.allowedCommands || []);
+          setCursorDisallowedCommands(cursorSettings.disallowedCommands || []);
+          setCursorSkipPermissions(cursorSettings.skipPermissions || false);
+        } else {
+          setCursorAllowedCommands([]);
+          setCursorDisallowedCommands([]);
+          setCursorSkipPermissions(false);
+        }
       }
 
       // Load MCP servers from API
@@ -445,7 +593,7 @@ function Settings({ isOpen, onClose, projects = [], initialTab = 'tools' }) {
     setShowLoginModal(false);
   };
 
-  const saveSettings = () => {
+  const saveSettings = async () => {
     setIsSaving(true);
     setSaveStatus(null);
     
@@ -467,11 +615,25 @@ function Settings({ isOpen, onClose, projects = [], initialTab = 'tools' }) {
         lastUpdated: new Date().toISOString()
       };
       
-      // Save to localStorage
-      localStorage.setItem('claude-settings', JSON.stringify(claudeSettings));
-      localStorage.setItem('cursor-tools-settings', JSON.stringify(cursorSettings));
-      
-      setSaveStatus('success');
+      // Save to database
+      try {
+        await api.settings.saveAll({
+          'claude-settings': claudeSettings,
+          'cursor-tools-settings': cursorSettings
+        });
+        
+        // Also save to localStorage as backup
+        localStorage.setItem('claude-settings', JSON.stringify(claudeSettings));
+        localStorage.setItem('cursor-tools-settings', JSON.stringify(cursorSettings));
+        
+        setSaveStatus('success');
+      } catch (dbError) {
+        // Fallback to localStorage if database fails
+        console.warn('Failed to save to database, using localStorage:', dbError);
+        localStorage.setItem('claude-settings', JSON.stringify(claudeSettings));
+        localStorage.setItem('cursor-tools-settings', JSON.stringify(cursorSettings));
+        setSaveStatus('success');
+      }
       
       setTimeout(() => {
         onClose();

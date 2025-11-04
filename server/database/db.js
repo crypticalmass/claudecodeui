@@ -60,6 +60,22 @@ const initializeDatabase = async () => {
   try {
     const initSQL = fs.readFileSync(INIT_SQL_PATH, 'utf8');
     db.exec(initSQL);
+    
+    // Ensure user_settings table exists (for existing databases)
+    db.exec(`
+      CREATE TABLE IF NOT EXISTS user_settings (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER NOT NULL,
+        setting_key TEXT NOT NULL,
+        setting_value TEXT NOT NULL,
+        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+        UNIQUE(user_id, setting_key)
+      );
+      CREATE INDEX IF NOT EXISTS idx_user_settings_user_id ON user_settings(user_id);
+      CREATE INDEX IF NOT EXISTS idx_user_settings_key ON user_settings(setting_key);
+    `);
+    
     console.log('Database initialized successfully');
   } catch (error) {
     console.error('Error initializing database:', error.message);
@@ -278,11 +294,77 @@ const githubTokensDb = {
   }
 };
 
+// User settings database operations
+const settingsDb = {
+  // Save a setting for a user
+  saveSetting: (userId, settingKey, settingValue) => {
+    try {
+      const stmt = db.prepare(`
+        INSERT INTO user_settings (user_id, setting_key, setting_value, updated_at)
+        VALUES (?, ?, ?, CURRENT_TIMESTAMP)
+        ON CONFLICT(user_id, setting_key) 
+        DO UPDATE SET setting_value = excluded.setting_value, updated_at = CURRENT_TIMESTAMP
+      `);
+      stmt.run(userId, settingKey, JSON.stringify(settingValue));
+      return true;
+    } catch (err) {
+      throw err;
+    }
+  },
+
+  // Get a setting for a user
+  getSetting: (userId, settingKey) => {
+    try {
+      const row = db.prepare('SELECT setting_value FROM user_settings WHERE user_id = ? AND setting_key = ?').get(userId, settingKey);
+      if (row) {
+        try {
+          return JSON.parse(row.setting_value);
+        } catch {
+          return row.setting_value;
+        }
+      }
+      return null;
+    } catch (err) {
+      throw err;
+    }
+  },
+
+  // Get all settings for a user
+  getAllSettings: (userId) => {
+    try {
+      const rows = db.prepare('SELECT setting_key, setting_value FROM user_settings WHERE user_id = ?').all(userId);
+      const settings = {};
+      rows.forEach(row => {
+        try {
+          settings[row.setting_key] = JSON.parse(row.setting_value);
+        } catch {
+          settings[row.setting_key] = row.setting_value;
+        }
+      });
+      return settings;
+    } catch (err) {
+      throw err;
+    }
+  },
+
+  // Delete a setting for a user
+  deleteSetting: (userId, settingKey) => {
+    try {
+      const stmt = db.prepare('DELETE FROM user_settings WHERE user_id = ? AND setting_key = ?');
+      const result = stmt.run(userId, settingKey);
+      return result.changes > 0;
+    } catch (err) {
+      throw err;
+    }
+  }
+};
+
 export {
   db,
   initializeDatabase,
   userDb,
   apiKeysDb,
   credentialsDb,
-  githubTokensDb // Backward compatibility
+  githubTokensDb, // Backward compatibility
+  settingsDb
 };

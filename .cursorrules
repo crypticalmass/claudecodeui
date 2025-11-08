@@ -1,0 +1,368 @@
+# Cursor Agent Rules for Claude Code UI
+
+## Project Context
+
+**Claude Code UI** is a web-based interface for Claude Code CLI and Cursor CLI. This is a **private fork** maintained independently from upstream.
+
+- **Private Fork**: git@github.com:crypticalmass/claudecodeui.git
+- **Upstream**: https://github.com/siteboon/claudecodeui
+- **Current Version**: 1.11.0
+- **Default Port**: 4001 (changed from upstream's 3001)
+
+## Key Customizations
+
+1. **Persistent User Settings**: Database-backed settings via `user_settings` table
+2. **Port 4001**: Changed from 3001 to avoid conflicts
+3. **PM2 Deployment**: Production-ready process management
+4. **Dual CLI Support**: Both Claude Code and Cursor CLI fully integrated
+
+## Technology Stack
+
+- **Frontend**: React 18, Vite 7.0.4, Tailwind CSS 3.4.0
+- **Backend**: Node.js v20+, Express 4.18.2, WebSocket (ws 8.14.2)
+- **Database**: SQLite3 / better-sqlite3
+- **Auth**: JWT + bcrypt
+
+## Development Workflow
+
+### Task-Based Development
+
+**All changes must be tracked as tasks:**
+
+1. Check `TASKS/` directory for available tasks
+2. Read task specification file (e.g., `TASKS/TASK-001.md`)
+3. Update `TASK_ASSIGNMENTS.md` to claim the task
+4. Implement changes following task specifications
+5. Update task status in `TASK_ASSIGNMENTS.md` when complete
+6. Create commit following conventional commits format
+
+### Commit Message Format
+
+Follow [Conventional Commits](https://www.conventionalcommits.org/):
+
+```
+type(scope): description
+
+[optional body]
+
+[optional footer]
+```
+
+**Types:**
+- `feat`: New feature
+- `fix`: Bug fix
+- `docs`: Documentation only
+- `chore`: Maintenance tasks
+- `refactor`: Code refactoring
+- `test`: Adding tests
+- `deploy`: Deployment changes
+
+**Examples:**
+```
+feat(cursor): add Cursor CLI setup documentation
+docs(deployment): update DEPLOYMENT.md with Cursor sections
+fix(settings): correct user settings persistence issue
+```
+
+### Branch Strategy
+
+- `main`: Production-ready code
+- `feature/*`: New features
+- `fix/*`: Bug fixes
+- `docs/*`: Documentation updates
+- `deploy/*`: Deployment changes
+
+## File Organization
+
+### Key Directories
+
+```
+claudecodeui/
+├── server/              # Backend Node.js server
+│   ├── routes/          # API routes
+│   ├── database/        # SQLite database
+│   └── utils/           # Utility functions
+├── src/                 # Frontend React application
+│   ├── components/      # React components
+│   ├── contexts/        # React Context providers
+│   └── hooks/           # Custom React hooks
+├── TASKS/               # Task specifications for agents
+├── .github/             # GitHub templates
+└── docs/                # Additional documentation
+```
+
+### Important Files
+
+- `CLAUDE.md`: Claude Code agent guidance
+- `.cursorrules`: This file - Cursor agent guidance
+- `DEPLOYMENT.md`: Production deployment guide
+- `CUSTOMIZATIONS.md`: Changes from upstream
+- `FORK_WORKFLOW.md`: Fork management workflow
+- `TASK_ASSIGNMENTS.md`: Task tracking and assignments
+
+## Task Execution Guidelines
+
+### Before Starting a Task
+
+1. **Read the task specification** in `TASKS/TASK-XXX.md`
+2. **Check dependencies**: Ensure prerequisite tasks are complete
+3. **Claim the task**: Update `TASK_ASSIGNMENTS.md`
+4. **Read related documentation**: Review files mentioned in task spec
+
+### During Task Execution
+
+1. **Follow acceptance criteria**: Task spec defines what "done" means
+2. **Maintain code style**: Match existing patterns
+3. **Update documentation**: If task affects user-facing features
+4. **Test changes**: Verify functionality works as expected
+5. **Check for conflicts**: Ensure no merge conflicts with main
+
+### After Completing a Task
+
+1. **Update task status**: Mark as complete in `TASK_ASSIGNMENTS.md`
+2. **Commit changes**: Use conventional commit format
+3. **Reference task**: Include task ID in commit message
+4. **Note any issues**: Document problems encountered
+5. **Update related docs**: If task spec requires it
+
+## Code Style Guidelines
+
+### JavaScript/React
+
+- Use ES6+ features (arrow functions, destructuring, etc.)
+- Functional components with hooks (no class components)
+- PropTypes or TypeScript for type checking
+- Meaningful variable names (no single letters except loops)
+
+### File Naming
+
+- Components: PascalCase (e.g., `ChatInterface.jsx`)
+- Utilities: camelCase (e.g., `websocket.js`)
+- Routes: kebab-case (e.g., `user-settings.js`)
+- Documentation: UPPERCASE (e.g., `README.md`)
+
+### Documentation
+
+- Use markdown for all documentation
+- Include code examples where helpful
+- Add table of contents for long documents
+- Cross-reference related documentation
+- Keep line length reasonable (80-120 chars)
+
+## Testing
+
+- Test manually after changes
+- Verify on both desktop and mobile viewports
+- Check console for errors
+- Test with both Claude and Cursor CLI
+- Verify settings persistence
+
+## Security Considerations
+
+- Never commit `.env` files
+- Never commit database files
+- Never commit API keys or secrets
+- Validate all user inputs
+- Use parameterized SQL queries
+- Sanitize file paths
+
+## Common Patterns
+
+### Adding a New API Route
+
+1. Create route file in `server/routes/`
+2. Import and register in `server/index.js`
+3. Add authentication middleware if needed
+4. Document in API docs
+5. Test with curl or Postman
+
+### Adding a New React Component
+
+1. Create component in `src/components/`
+2. Use functional component with hooks
+3. Import and use in parent component
+4. Add PropTypes if applicable
+5. Style with Tailwind classes
+
+### Adding Database Table
+
+1. Update `server/database/init.sql`
+2. Add operations to `server/database/db.js`
+3. Create migration if needed
+4. Test database operations
+5. Document schema changes
+
+## Cursor CLI Integration
+
+### Key Files
+
+- `server/cursor-cli.js`: Cursor CLI process spawning
+- `server/routes/cursor.js`: Cursor API endpoints
+- `src/components/Settings.jsx`: Cursor settings UI
+
+### Cursor vs Claude Differences
+
+- **Project Discovery**: Cursor uses MD5 hashing, Claude uses directory names
+- **Session Storage**: Cursor uses SQLite, Claude uses JSONL
+- **Configuration**: Cursor has allowed commands, Claude has tool permissions
+
+## Deployment
+
+### Local Development
+
+```bash
+npm run dev  # Start both server and client
+```
+
+### Production Deployment
+
+```bash
+npm run build           # Build frontend
+npm install -g .        # Install globally
+pm2 start ecosystem.config.js  # Start with PM2
+```
+
+### Environment Variables
+
+Required:
+- `JWT_SECRET`: Secure random string for authentication
+- `PORT`: Server port (default: 4001)
+
+Optional:
+- `DATABASE_PATH`: Custom database location
+- `OPENAI_API_KEY`: For Whisper transcription
+
+## Resources
+
+- **Documentation**: See `DOCUMENTATION_INDEX.md` for all docs
+- **Deployment**: See `DEPLOYMENT.md` for production setup
+- **Customizations**: See `CUSTOMIZATIONS.md` for fork changes
+- **Tasks**: See `TASKS/` directory for available work
+- **Issues**: Check GitHub issues for bugs and features
+
+## Getting Help
+
+1. Check `CLAUDE.md` for detailed project information
+2. Review relevant documentation files
+3. Check task specifications for context
+4. Review existing code for patterns
+5. Check git history for similar changes
+
+## Important Notes
+
+- This is a **private fork** - never submit PRs to upstream
+- All changes must be documented
+- Follow task-based workflow
+- Test thoroughly before marking tasks complete
+- Keep documentation up to date
+
+## Agent Approval Requirements
+
+### Actions Requiring Explicit Approval
+
+**ALWAYS ask for approval before:**
+
+1. **Irreversible Git Operations:**
+   - Force pushing (`git push --force`)
+   - Deleting branches with unmerged work
+   - Rewriting published history
+   - Changing remote URLs
+   - Any operation that could push to upstream
+
+2. **External Communications:**
+   - Creating GitHub issues (in any repository)
+   - Submitting pull requests
+   - Sending emails or notifications
+   - Posting to external services
+   - Any action that creates public records
+
+3. **Destructive Operations:**
+   - Deleting files or directories
+   - Dropping database tables
+   - Removing dependencies
+   - Uninstalling packages
+   - Shutting down services
+   - Removing configurations
+
+4. **Production Changes:**
+   - Deploying to production
+   - Modifying production databases
+   - Changing production environment variables
+   - Restarting production services
+   - Any operation affecting live systems
+
+5. **Security-Sensitive Operations:**
+   - Modifying authentication code
+   - Changing security configurations
+   - Exposing secrets or credentials
+   - Modifying access controls
+   - Changing encryption settings
+
+### Actions That Don't Require Approval
+
+**Safe to proceed without asking:**
+
+1. **Read Operations:**
+   - Reading files
+   - Viewing git history
+   - Checking status
+   - Listing directories
+
+2. **Local Development:**
+   - Creating feature branches
+   - Making commits to feature branches
+   - Running tests locally
+   - Building locally
+   - Installing dev dependencies
+
+3. **Documentation:**
+   - Creating/updating markdown files
+   - Adding code comments
+   - Updating README files
+   - Creating task specifications
+
+4. **Sandbox Operations:**
+   - When explicitly told "sandbox mode" or "auto-approve all"
+   - When user says "proceed without asking"
+   - During approved batch operations
+
+### How to Ask for Approval
+
+When approval is needed:
+
+```
+⚠️ APPROVAL REQUIRED
+
+Action: [Describe what you want to do]
+Type: [Irreversible/External/Destructive/Production/Security]
+Impact: [What will happen]
+Reversible: [Yes/No - and how if yes]
+Alternative: [Safer option if available]
+
+Proceed? (yes/no)
+```
+
+### Private Fork Rules for Agents
+
+**🚫 NEVER:**
+- Submit PRs to upstream (https://github.com/siteboon/claudecodeui)
+- Push to upstream remote
+- Create issues in upstream repository
+- Reference upstream in any write operations
+- Expose private fork work publicly
+
+**✅ ALWAYS:**
+- Work only in private fork (git@github.com:crypticalmass/claudecodeui.git)
+- Create issues in private fork only
+- Submit PRs to private fork only
+- Keep all work private
+- Ask before any git operations that could expose work
+
+**⚠️ ASK FIRST:**
+- Any git push operations
+- Creating/updating GitHub issues
+- Submitting pull requests
+- Changing git remotes
+- Force pushing
+- Deleting branches
+

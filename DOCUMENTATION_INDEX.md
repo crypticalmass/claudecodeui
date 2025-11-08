@@ -108,7 +108,22 @@ Complete index of all project documentation with descriptions and cross-referenc
 - **Cursor CLI sections** (TASK-001)
 - Troubleshooting
 
-**Related**: `DEPLOYMENT_CHECKLIST.md`, `DEPLOYMENT_HISTORY.md`, `ecosystem.config.js`
+**Related**: `DEPLOYMENT_CHECKLIST.md`, `DEPLOYMENT_CHECKPOINT.md`, `DEPLOYMENT_HISTORY.md`, `ecosystem.config.cjs`
+
+### DEPLOYMENT_CHECKPOINT.md
+**Purpose**: Production deployment checkpoint documentation  
+**Audience**: All stakeholders  
+**Contains**:
+- Migration summary (November 8, 2025)
+- Deployment verification results
+- Service status and configuration
+- Database persistence confirmation
+- PM2 process management setup
+- Port 4001 configuration
+- Rollback procedures
+
+**Status**: ✅ Complete  
+**Related**: `DEPLOYMENT.md`, `CUSTOMIZATIONS.md`, `DEPLOYMENT_CHECKLIST.md`
 
 ### DEPLOYMENT_CHECKLIST.md
 **Purpose**: Step-by-step deployment checklist  
@@ -413,10 +428,11 @@ claudecodeui/
 ├── Deployment/
 │   ├── DEPLOYMENT.md                  # Deployment guide
 │   ├── DEPLOYMENT_CHECKLIST.md        # Deployment checklist
+│   ├── DEPLOYMENT_CHECKPOINT.md       # Production checkpoint (Nov 8, 2025)
 │   ├── DEPLOYMENT_HISTORY.md          # Audit trail (TASK-013)
 │   ├── DEPLOYMENT_TASKS.md            # Task tracking (TASK-009)
 │   ├── CURSOR_SETUP.md                # Cursor setup (TASK-003)
-│   ├── ecosystem.config.js            # PM2 config
+│   ├── ecosystem.config.cjs           # PM2 config
 │   ├── .env.production.example        # Env template
 │   └── scripts/setup-env.sh           # Setup script
 │

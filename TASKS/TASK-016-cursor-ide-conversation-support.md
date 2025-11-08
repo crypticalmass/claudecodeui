@@ -31,32 +31,98 @@ Cursor IDE conversations are stored differently than Cursor CLI sessions. We nee
 3. Display them in the sidebar alongside other sessions
 4. Allow viewing and potentially resuming these conversations
 
+## Current Findings (2025-11-08)
+
+### What We Know
+
+1. **Cursor CLI Sessions** (Already Supported):
+   - **Location**: `~/.cursor/chats/{md5_hash_of_project_path}/`
+   - **Format**: SQLite database (`store.db`)
+   - **Structure**: 
+     - `blobs` table: Contains messages (JSON) and DAG structure (protobuf)
+     - `meta` table: Contains session metadata (hex-encoded JSON)
+   - **Project Association**: MD5 hash of absolute project path
+   - **Example**: `/Users/user/project` → MD5 → `37c9566f855983ab9bc299dddf9166e3` → `~/.cursor/chats/37c9566f855983ab9bc299dddf9166e3/`
+
+2. **Cursor IDE Project Directories**:
+   - **Location**: `~/.cursor/projects/{encoded_project_path}/`
+   - **Format**: Directory structure (not conversations)
+   - **Contents**: 
+     - `mcp-cache.json`: MCP server cache
+     - `mcps/`: MCP tool descriptors
+   - **Note**: These directories exist but don't contain conversation data
+
+3. **Verified Working**:
+   - Cursor CLI sessions created from Claude Code UI are accessible
+   - Session ID format: UUID (e.g., `ab3eeb44-9e3d-489d-a50c-7636eb4a1008`)
+   - Database structure is readable and parseable
+   - Metadata includes: `agentId`, `name`, `createdAt`, `mode`, `latestRootBlobId`
+
+### What We Still Need to Discover
+
+1. **Cursor IDE Storage Location**:
+   - ❓ Check `~/Library/Application Support/Cursor/` (macOS)
+   - ❓ Check for IDE-specific databases in `~/.cursor/`
+   - ❓ Verify if IDE uses same `~/.cursor/chats/` structure as CLI
+   - ❓ Check for centralized conversation storage
+
+2. **Conversation Format** (if different from CLI):
+   - ❓ SQLite database structure (same or different?)
+   - ❓ JSON format differences
+   - ❓ Protobuf format differences
+   - ❓ File naming conventions
+   - ❓ Session metadata structure
+
+3. **Project Association**:
+   - ❓ Path-based association (same MD5 hash?)
+   - ❓ Workspace-based association
+   - ❓ Metadata-based association
+   - ❓ Different hashing algorithm?
+
+### Investigation Commands
+
+```bash
+# Check macOS Application Support
+find ~/Library/Application\ Support/Cursor -name "*.db" -o -name "*.sqlite" 2>/dev/null
+
+# Check .cursor directory for IDE-specific storage
+find ~/.cursor -type f -name "*.db" -o -name "*.sqlite" 2>/dev/null | grep -v chats
+
+# Check if IDE uses same chats directory
+ls -la ~/.cursor/chats/ | grep -v "^d" | head -20
+
+# Check for conversation-related files
+find ~/.cursor -type f \( -name "*conversation*" -o -name "*chat*" -o -name "*session*" \) 2>/dev/null
+```
+
 ## Research Required
 
 ### 1. Cursor IDE Storage Location
 
 Investigate where Cursor IDE stores conversations:
-- Check `~/Library/Application Support/Cursor/` (macOS)
-- Check `~/.cursor/` for IDE-specific storage
-- Check for SQLite databases or JSON files
-- Verify if IDE uses same `~/.cursor/chats/` structure as CLI
+- ✅ Checked `~/.cursor/chats/` - Contains CLI sessions (MD5 hash directories)
+- ✅ Checked `~/.cursor/projects/` - Contains project configs, not conversations
+- ❓ Check `~/Library/Application Support/Cursor/` (macOS)
+- ❓ Check for IDE-specific storage patterns
+- ❓ Verify if IDE uses same `~/.cursor/chats/` structure as CLI (different hash?)
 
 ### 2. Conversation Format
 
 Determine the storage format:
-- SQLite database structure
-- JSON format
-- Protobuf format
-- File naming conventions
-- Session metadata structure
+- ✅ CLI uses SQLite with `blobs` and `meta` tables
+- ❓ IDE format (same or different?)
+- ❓ JSON structure differences
+- ❓ Protobuf structure differences
+- ❓ Session metadata differences
 
 ### 3. Project Association
 
 Figure out how IDE conversations are associated with projects:
-- Path-based association
-- Workspace-based association
-- Hash-based association (like CLI)
-- Metadata-based association
+- ✅ CLI uses MD5 hash of absolute path
+- ❓ IDE uses same MD5 hash or different algorithm?
+- ❓ Workspace-based association
+- ❓ Metadata-based association
+- ❓ Different directory structure?
 
 ## Acceptance Criteria
 
@@ -188,6 +254,7 @@ Figure out how IDE conversations are associated with projects:
 - `server/routes/cursor.js` - Cursor CLI endpoints (reference)
 - `src/components/Sidebar.jsx` - Session display
 - `src/components/ChatInterface.jsx` - Conversation viewing
+- `TASKS/TASK-016-FINDINGS.md` - Research findings and investigation notes
 
 ## Notes
 

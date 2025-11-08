@@ -174,16 +174,18 @@ Complete index of all project documentation with descriptions and cross-referenc
 **Status**: To be created (TASK-003)  
 **Related**: `DEPLOYMENT.md`, `CUSTOMIZATIONS.md`
 
-### ecosystem.config.js
-**Purpose**: PM2 configuration  
+### ecosystem.config.cjs
+**Purpose**: PM2 configuration (CommonJS format)  
 **Audience**: DevOps  
 **Contains**:
 - PM2 process settings
-- Environment variables
+- Environment variable loading from .env
 - Logging configuration
 - Auto-restart settings
+- Memory limits and optimization
 
-**Related**: `DEPLOYMENT.md`, `.env.production.example`
+**Note**: Uses .cjs extension for CommonJS compatibility with PM2  
+**Related**: `DEPLOYMENT.md`, `.env.production.example`, `DEPLOYMENT_CHECKPOINT.md`
 
 ### .env.production.example
 **Purpose**: Environment variable template  

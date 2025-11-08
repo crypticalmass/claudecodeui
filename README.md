@@ -53,6 +53,8 @@ A desktop and mobile UI for [Claude Code](https://docs.anthropic.com/en/docs/cla
 
 ## Quick Start
 
+> **Note**: For production deployment, see [DEPLOYMENT.md](DEPLOYMENT.md) for detailed instructions including PM2 setup and environment configuration.
+
 ### Prerequisites
 
 - [Node.js](https://nodejs.org/) v20 or higher
@@ -67,7 +69,7 @@ No installation required, direct operation:
 npx @siteboon/claude-code-ui
 ```
 
-The server will start and be accessible at `http://localhost:3001` (or your configured PORT).
+The server will start and be accessible at `http://localhost:4001` (or your configured PORT).
 
 **To restart**: Simply run the same `npx` command again after stopping the server
 ### Global Installation (For Regular Use)
@@ -177,7 +179,7 @@ npm run dev
 The application will start at the port you specified in your .env
 
 5. **Open your browser:**
-   - Development: `http://localhost:3001`
+   - Development: `http://localhost:4001`
 
 ## Security & Tools Configuration
 
@@ -332,6 +334,22 @@ We welcome contributions! Please follow these guidelines:
 - Review server console logs for detailed error messages
 - Ensure you're not trying to access system directories outside project scope
 
+
+## Private Fork Information
+
+**This is a private fork** maintained independently from the upstream repository.
+
+- **Upstream**: https://github.com/siteboon/claudecodeui
+- **Private Fork**: git@github.com:crypticalmass/claudecodeui.git
+- **Customizations**: See [CUSTOMIZATIONS.md](CUSTOMIZATIONS.md) for details
+- **Deployment**: See [DEPLOYMENT.md](DEPLOYMENT.md) for production deployment guide
+- **Fork Workflow**: See [FORK_WORKFLOW.md](FORK_WORKFLOW.md) for fork management
+
+### Key Customizations
+
+- **Persistent User Settings**: Database-backed settings persistence
+- **Default Port**: Changed to 4001 (from 3001)
+- **Production Deployment**: PM2 configuration and deployment documentation
 
 ## License
 

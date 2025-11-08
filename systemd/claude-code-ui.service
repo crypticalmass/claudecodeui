@@ -1,0 +1,28 @@
+[Unit]
+Description=Claude Code UI - Web-based UI for Claude Code CLI
+After=network.target
+
+[Service]
+Type=simple
+User=%i
+WorkingDirectory=/opt/claude-code-ui
+Environment="NODE_ENV=production"
+EnvironmentFile=/opt/claude-code-ui/.env
+ExecStart=/usr/bin/node /opt/claude-code-ui/server/index.js
+Restart=always
+RestartSec=10
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=claude-code-ui
+
+# Security settings
+NoNewPrivileges=true
+PrivateTmp=true
+
+# Resource limits
+LimitNOFILE=65536
+MemoryMax=1G
+
+[Install]
+WantedBy=multi-user.target
+

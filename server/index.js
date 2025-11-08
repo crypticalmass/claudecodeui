@@ -71,6 +71,7 @@ import settingsRoutes from './routes/settings.js';
 import credentialsSettingsRoutes from './routes/credentials-settings.js';
 import agentRoutes from './routes/agent.js';
 import projectsRoutes from './routes/projects.js';
+import userSettingsRoutes from './routes/user-settings.js';
 import { initializeDatabase } from './database/db.js';
 import { validateApiKey, authenticateToken, authenticateWebSocket } from './middleware/auth.js';
 
@@ -229,6 +230,9 @@ app.use('/api/settings', authenticateToken, settingsRoutes);
 
 // Credentials/API Keys Settings Routes (protected) - nested under /api/settings
 app.use('/api/settings', authenticateToken, credentialsSettingsRoutes);
+
+// User Settings Routes (protected) - persistent database-backed settings
+app.use('/api/user-settings', authenticateToken, userSettingsRoutes);
 
 // Agent API Routes (uses API key authentication)
 app.use('/api/agent', agentRoutes);
@@ -1432,7 +1436,7 @@ async function getFileTree(dirPath, maxDepth = 3, currentDepth = 0, showHidden =
     });
 }
 
-const PORT = process.env.PORT || 3001;
+const PORT = process.env.PORT || 4001;
 
 // Initialize database and start server
 async function startServer() {

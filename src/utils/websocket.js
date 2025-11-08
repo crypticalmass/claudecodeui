@@ -5,6 +5,7 @@ export function useWebSocket() {
   const [messages, setMessages] = useState([]);
   const [isConnected, setIsConnected] = useState(false);
   const reconnectTimeoutRef = useRef(null);
+  const wsRef = useRef(null); // Use ref to always have current WebSocket instance
 
   useEffect(() => {
     connect();
@@ -13,8 +14,9 @@ export function useWebSocket() {
       if (reconnectTimeoutRef.current) {
         clearTimeout(reconnectTimeoutRef.current);
       }
-      if (ws) {
-        ws.close();
+      if (wsRef.current) {
+        wsRef.current.close();
+        wsRef.current = null;
       }
     };
   }, []); // Keep dependency array but add proper cleanup
@@ -57,8 +59,10 @@ export function useWebSocket() {
       // Include token in WebSocket URL as query parameter
       const wsUrl = `${wsBaseUrl}/ws?token=${encodeURIComponent(token)}`;
       const websocket = new WebSocket(wsUrl);
+      wsRef.current = websocket; // Store in ref immediately
 
       websocket.onopen = () => {
+        console.log('[WebSocket] Connected successfully');
         setIsConnected(true);
         setWs(websocket);
       };
@@ -73,8 +77,10 @@ export function useWebSocket() {
       };
 
       websocket.onclose = () => {
+        console.log('[WebSocket] Connection closed');
         setIsConnected(false);
         setWs(null);
+        wsRef.current = null;
         
         // Attempt to reconnect after 3 seconds
         reconnectTimeoutRef.current = setTimeout(() => {
@@ -83,7 +89,7 @@ export function useWebSocket() {
       };
 
       websocket.onerror = (error) => {
-        console.error('WebSocket error:', error);
+        console.error('[WebSocket] Error:', error);
       };
 
     } catch (error) {
@@ -92,10 +98,16 @@ export function useWebSocket() {
   };
 
   const sendMessage = (message) => {
-    if (ws && isConnected) {
-      ws.send(JSON.stringify(message));
+    const currentWs = wsRef.current; // Always use ref for current WebSocket
+    if (currentWs && currentWs.readyState === WebSocket.OPEN) {
+      try {
+        currentWs.send(JSON.stringify(message));
+        console.log('[WebSocket] Message sent:', message.type);
+      } catch (error) {
+        console.error('[WebSocket] Error sending message:', error);
+      }
     } else {
-      console.warn('WebSocket not connected');
+      console.warn('[WebSocket] Not connected. ReadyState:', currentWs?.readyState, 'isConnected:', isConnected);
     }
   };
 

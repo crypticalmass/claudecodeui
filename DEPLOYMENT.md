@@ -70,7 +70,7 @@ This makes `claude-code-ui` and `cloudcli` commands available system-wide.
 
 ```bash
 # Start the application
-pm2 start ecosystem.config.js
+pm2 start ecosystem.config.cjs
 
 # Save PM2 process list
 pm2 save
@@ -136,7 +136,7 @@ chmod 700 /var/lib/claude-code-ui
 
 ```bash
 # Start application
-pm2 start ecosystem.config.js
+pm2 start ecosystem.config.cjs
 
 # Stop application
 pm2 stop claude-code-ui
@@ -346,7 +346,7 @@ PM2 handles log rotation automatically. Logs are stored in `./logs/` directory:
 
 ### Memory Limits
 
-The PM2 config sets `max_memory_restart: '1G'`. Adjust in `ecosystem.config.js` if needed.
+The PM2 config sets `max_memory_restart: '1G'`. Adjust in `ecosystem.config.cjs` if needed.
 
 ### Node.js Options
 

@@ -37,6 +37,7 @@ This file tracks all active tasks, their assignments, and current status. Agents
 | TASK-014 | Create DOCUMENTATION_INDEX.md | Low | Pending | Unassigned | - | - | Depends on all docs |
 | TASK-015 | Cross-reference all documentation | Low | Pending | Unassigned | - | - | Depends on all docs |
 | TASK-016 | Add Cursor IDE Conversation Support | Medium | Pending | Unassigned | - | - | No dependencies |
+| TASK-017 | Cursor IDE to CLI Parallel Workflow Sync | Medium | Pending | Unassigned | - | - | Depends on TASK-016 |
 
 ## Task Dependencies
 
@@ -124,10 +125,10 @@ Example:
 
 ## Statistics
 
-- **Total Tasks**: 16
+- **Total Tasks**: 17
 - **Completed**: 0
 - **In Progress**: 0
-- **Pending**: 16
+- **Pending**: 17
 - **Blocked**: 0
 
 ## Recent Activity
